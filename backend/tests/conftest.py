@@ -59,3 +59,10 @@ sys.modules.setdefault("minio.error", minio_error_mock)
 rq_mock = MagicMock()
 sys.modules.setdefault("rq", rq_mock)
 sys.modules.setdefault("rq.job", rq_mock)
+
+# ---------------------------------------------------------------------------
+# 6. Stub redis so queue.py can import Redis without the real package.
+# ---------------------------------------------------------------------------
+redis_mock = MagicMock()
+redis_mock.Redis = MagicMock()
+sys.modules.setdefault("redis", redis_mock)

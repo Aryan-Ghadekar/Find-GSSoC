@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
-import { Providers } from "./providers";
 import NavBar from "@/components/NavBar";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Find - Local AI Image Intelligence",

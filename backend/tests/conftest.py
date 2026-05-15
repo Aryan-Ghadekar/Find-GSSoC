@@ -7,7 +7,7 @@ out pgvector (which requires a live Postgres extension) and MinIO storage.
 
 import sys
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 import sqlalchemy
 
 # ---------------------------------------------------------------------------

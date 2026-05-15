@@ -125,7 +125,9 @@ export default function GalleryPage() {
       toast.success("Retry queued — analysis will restart shortly.");
     },
     onError: () => {
-      toast.error("Retry failed. The queue may be unavailable — please try again.");
+      toast.error(
+        "Retry failed. The queue may be unavailable — please try again.",
+      );
     },
   });
 

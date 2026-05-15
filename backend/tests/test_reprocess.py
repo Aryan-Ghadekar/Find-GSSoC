@@ -6,17 +6,17 @@ Run with (from backend/ directory):
     pytest tests/test_reprocess.py -v
 """
 
+import datetime
+from typing import Optional
 import pytest
 from unittest.mock import MagicMock, patch
-
-# conftest.py sets env vars and stubs pgvector / minio / rq before any import.
-
 from fastapi.testclient import TestClient
+from fastapi import FastAPI
+import find_api.routers.gallery as gallery_module
+from find_api.core.database import get_db
 from sqlalchemy import create_engine, String, Integer, Boolean, DateTime, Text, JSON
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.pool import StaticPool
-from typing import Optional
-import datetime
 
 # ---------------------------------------------------------------------------
 # Minimal in-memory SQLite replica of the Media model (no pgvector needed)
@@ -74,19 +74,10 @@ def _fresh_db():
 
 # ---------------------------------------------------------------------------
 # Import the router under test and override dependencies
-# Patch find_api.routers.gallery.Media *before* importing so the router
-# uses our SQLite-compatible FakeMedia class.
+# Patch find_api.routers.gallery.Media so the router uses our FakeMedia.
 # ---------------------------------------------------------------------------
 
-import sys
-
-# First import — pgvector is already mocked in conftest.py
-import find_api.routers.gallery as gallery_module
-
 gallery_module.Media = FakeMedia  # type: ignore[assignment]
-
-from fastapi import FastAPI
-from find_api.core.database import get_db
 
 test_app = FastAPI()
 test_app.include_router(gallery_module.router, prefix="/api")

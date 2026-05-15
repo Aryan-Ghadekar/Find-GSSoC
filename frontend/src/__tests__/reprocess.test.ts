@@ -11,8 +11,9 @@
  *   pnpm vitest run src/__tests__/reprocess.test.ts   # run this file only
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
+import type { AxiosInstance } from "axios";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Unit tests: reprocessImage API function
@@ -21,7 +22,7 @@ import axios from "axios";
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios, true);
 // Provide a mocked axios instance that `axios.create()` will return.
-const apiInstanceMock = {
+const apiInstanceMock: Partial<AxiosInstance> = {
   post: vi.fn(),
   get: vi.fn(),
   delete: vi.fn(),
@@ -31,13 +32,21 @@ describe("reprocessImage API function", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // Make axios.create() return our mock instance so `api` is defined.
-    mockedAxios.create = vi.fn().mockReturnValue(apiInstanceMock as any);
+    mockedAxios.create = vi.fn().mockReturnValue(apiInstanceMock as AxiosInstance);
   });
 
   it("calls POST /api/image/:id/reprocess and returns the response", async () => {
     const { reprocessImage } = await import("../lib/api");
 
-    const mockResponse = { data: { media_id: 42, job_id: "job-abc", status: "queued" } };
+    const { reprocessImage } = await import("../lib/api");
+
+    const mockResponse = {
+      data: {
+        media_id: 42,
+        job_id: "job-abc",
+        status: "queued",
+      },
+    };
     // api is an axios instance; mock the post method on the module-level api object
     const { api } = await import("../lib/api");
     vi.spyOn(api, "post").mockResolvedValueOnce(mockResponse);
@@ -45,18 +54,27 @@ describe("reprocessImage API function", () => {
     const result = await reprocessImage(42);
 
     expect(api.post).toHaveBeenCalledWith("/api/image/42/reprocess");
-    expect(result).toEqual({ media_id: 42, job_id: "job-abc", status: "queued" });
+    expect(result).toEqual({
+      media_id: 42,
+      job_id: "job-abc",
+      status: "queued",
+    });
   });
 
   it("propagates server errors (400, 404) to the caller", async () => {
     const { reprocessImage, api } = await import("../lib/api");
 
-    const axiosError = Object.assign(new Error("Request failed with status code 400"), {
-      response: { status: 400, data: { detail: "not eligible" } },
-    });
+    const axiosError = Object.assign(
+      new Error("Request failed with status code 400"),
+      {
+        response: { status: 400, data: { detail: "not eligible" } },
+      },
+    );
     vi.spyOn(api, "post").mockRejectedValueOnce(axiosError);
 
-    await expect(reprocessImage(99)).rejects.toThrow("Request failed with status code 400");
+    await expect(reprocessImage(99)).rejects.toThrow(
+      "Request failed with status code 400",
+    );
   });
 });
 

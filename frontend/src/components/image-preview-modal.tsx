@@ -26,6 +26,7 @@ import {
 import { resolveMediaUrl } from "@/lib/media";
 import { formatBytes, formatDate } from "@/lib/utils";
 import { StatusIndicator } from "./status-indicator";
+import { toast } from "sonner";
 
 export type PreviewMedia = Pick<MediaItem, "id" | "filename"> &
   Partial<
@@ -158,7 +159,9 @@ export function ImagePreviewModal({
       toast.success("Retry queued — analysis will restart shortly.");
     },
     onError: () => {
-      toast.error("Retry failed. The queue may be unavailable — please try again.");
+      toast.error(
+        "Retry failed. The queue may be unavailable — please try again.",
+      );
     },
   });
 
@@ -431,7 +434,9 @@ export function ImagePreviewModal({
                     <RotateCcw
                       className={`h-4 w-4 ${reprocessMutation.isPending ? "animate-spin" : ""}`}
                     />
-                    {reprocessMutation.isPending ? "Retrying…" : "Retry Analysis"}
+                    {reprocessMutation.isPending
+                      ? "Retrying…"
+                      : "Retry Analysis"}
                   </button>
                 )}
                 <button

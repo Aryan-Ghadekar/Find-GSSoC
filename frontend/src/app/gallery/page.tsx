@@ -9,6 +9,7 @@ import {
   Heart,
   ImageOff,
   Loader2,
+  RotateCcw,
   Trash2,
   X,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ImagePreviewModal,
   type PreviewMedia,
@@ -26,6 +28,7 @@ import {
   type GalleryResponse,
   getGallery,
   getImageDetail,
+  reprocessImage,
   toggleLike,
 } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/media";
@@ -176,6 +179,20 @@ function GalleryPageContent() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["gallery"] });
+    },
+  });
+
+  const reprocessMutation = useMutation({
+    mutationFn: (mediaId: number) => reprocessImage(mediaId),
+    onSuccess: ({ media_id }) => {
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["image-detail", media_id] });
+      toast.success("Retry queued — analysis will restart shortly.");
+    },
+    onError: () => {
+      toast.error(
+        "Retry failed. The queue may be unavailable — please try again.",
+      );
     },
   });
 
@@ -449,6 +466,24 @@ function GalleryPageContent() {
                           >
                             <Download className="h-3.5 w-3.5" />
                           </a>
+                        )}
+                        {(item.status === "failed" ||
+                          (item.status === "indexed" && !item.caption)) && (
+                          <button
+                            type="button"
+                            onClick={() => reprocessMutation.mutate(item.id)}
+                            disabled={reprocessMutation.isPending}
+                            className={`icon-button h-8 w-8 text-[#a1a4a5] ${
+                              reprocessMutation.isPending
+                                ? "cursor-not-allowed opacity-70"
+                                : ""
+                            }`}
+                            aria-label="Retry analysis"
+                          >
+                            <RotateCcw
+                              className={`h-3.5 w-3.5 ${reprocessMutation.isPending ? "animate-spin" : ""}`}
+                            />
+                          </button>
                         )}
                         <button
                           type="button"

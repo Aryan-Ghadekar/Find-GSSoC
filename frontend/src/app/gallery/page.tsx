@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ImagePreviewModal } from "@/components/image-preview-modal";
 import { StatusIndicator } from "@/components/status-indicator";
+import { toast } from "sonner";
 import {
   deleteImage,
   type GalleryResponse,
@@ -121,6 +122,10 @@ export default function GalleryPage() {
     onSuccess: ({ media_id }) => {
       queryClient.invalidateQueries({ queryKey: ["gallery"] });
       queryClient.invalidateQueries({ queryKey: ["image-detail", media_id] });
+      toast.success("Image queued for reprocessing.");
+    },
+    onError: () => {
+      toast.error("Retry failed. The image may not be eligible or the queue is unavailable.");
     },
   });
 
@@ -362,7 +367,8 @@ export default function GalleryPage() {
                             <Download className="h-3.5 w-3.5" />
                           </a>
                         )}
-                        {item.status === "failed" && (
+                        {(item.status === "failed" ||
+                          (item.status === "indexed" && !item.caption)) && (
                           <button
                             type="button"
                             onClick={() => reprocessMutation.mutate(item.id)}

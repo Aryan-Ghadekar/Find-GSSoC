@@ -26,6 +26,7 @@ import {
 import { resolveMediaUrl } from "@/lib/media";
 import { formatBytes, formatDate } from "@/lib/utils";
 import { StatusIndicator } from "./status-indicator";
+import { toast } from "sonner";
 
 export type PreviewMedia = Pick<MediaItem, "id" | "filename"> &
   Partial<
@@ -155,6 +156,10 @@ export function ImagePreviewModal({
     onSuccess: ({ media_id }) => {
       queryClient.invalidateQueries({ queryKey: ["gallery"] });
       queryClient.invalidateQueries({ queryKey: ["image-detail", media_id] });
+      toast.success("Image queued for reprocessing.");
+    },
+    onError: () => {
+      toast.error("Retry failed. The image may not be eligible or the queue is unavailable.");
     },
   });
 

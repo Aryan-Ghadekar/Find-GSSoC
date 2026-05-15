@@ -13,12 +13,13 @@ import sqlalchemy
 # ---------------------------------------------------------------------------
 # 1. Point DATABASE_URL at SQLite so no psycopg2 is needed.
 # ---------------------------------------------------------------------------
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
-os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
-os.environ.setdefault("MINIO_ENDPOINT", "localhost:9000")
-os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
-os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
-os.environ.setdefault("MINIO_BUCKET", "find-images")
+# Hard-pin to safe test values so external env vars cannot point tests at real services.
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["REDIS_URL"] = "redis://localhost:6379/0"
+os.environ["MINIO_ENDPOINT"] = "localhost:9000"
+os.environ["MINIO_ACCESS_KEY"] = "minioadmin"
+os.environ["MINIO_SECRET_KEY"] = "minioadmin"
+os.environ["MINIO_BUCKET"] = "find-images"
 
 # ---------------------------------------------------------------------------
 # 2. Patch create_engine to strip kwargs unsupported by SQLite (pool_size,

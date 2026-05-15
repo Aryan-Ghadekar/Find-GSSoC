@@ -1,14 +1,14 @@
 /**
  * Frontend tests for the reprocess/retry-analysis feature.
  *
- * Uses Vitest + @testing-library/react.
+ * Uses Vitest only (no DOM/rendering needed — pure logic + API mock tests).
  *
- * Install test dependencies (one-time):
- *   pnpm add -D vitest @vitejs/plugin-react @testing-library/react \
- *             @testing-library/user-event jsdom msw
+ * Install test dependency (one-time):
+ *   pnpm add -D vitest
  *
  * Run with:
- *   pnpm vitest run src/__tests__/reprocess.test.ts
+ *   pnpm test                               # runs all tests via npm script
+ *   pnpm vitest run src/__tests__/reprocess.test.ts  # run this file only
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -104,17 +104,22 @@ describe("retry-button eligibility", () => {
 // ---------------------------------------------------------------------------
 
 describe("gallery card retry visibility", () => {
-  /** Mirrors gallery/page.tsx: show RotateCcw only when item.status === "failed" */
-  function galleryCardShowsRetry(status: string): boolean {
-    return status === "failed";
+  /** Mirrors gallery/page.tsx: show RotateCcw for failed or indexed-with-no-caption */
+  function galleryCardShowsRetry(status: string, caption?: string): boolean {
+    return status === "failed" || (status === "indexed" && !caption);
   }
 
   it("shows retry button in gallery card for failed status", () => {
     expect(galleryCardShowsRetry("failed")).toBe(true);
   });
 
-  it("does not show retry button in gallery card for indexed status", () => {
-    expect(galleryCardShowsRetry("indexed")).toBe(false);
+  it("shows retry button in gallery card for indexed status with no caption", () => {
+    expect(galleryCardShowsRetry("indexed", undefined)).toBe(true);
+    expect(galleryCardShowsRetry("indexed", "")).toBe(true);
+  });
+
+  it("does not show retry button in gallery card for indexed status with caption", () => {
+    expect(galleryCardShowsRetry("indexed", "a dog on a bench")).toBe(false);
   });
 
   it("does not show retry button in gallery card for pending status", () => {

@@ -15,7 +15,6 @@ Relates to issue #42 and discussion #37.
 | Tauri system deps (macOS) | Xcode Command Line Tools — `xcode-select --install` |
 | Tauri system deps (Linux) | `sudo apt install libwebkit2gtk-4.1-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev` |
 | Node / pnpm | Install Node from https://nodejs.org, then run `npm install -g pnpm` |
-| App icons | See [Icons](#icons) section below |
 
 ---
 
@@ -51,21 +50,6 @@ pnpm desktop:build
 ```
 
 The installer is written to `frontend/src-tauri/target/release/bundle/`.
-
----
-
-## Icons
-
-Icon files are committed to the repository at `frontend/src-tauri/icons/` and
-generated from the official `frontend/public/Find-Logo.png`. No manual icon
-generation is needed — they are included out of the box.
-
-If you ever need to regenerate them (e.g. the logo changes), run:
-
-```bash
-cd frontend
-pnpm tauri icon public/Find-Logo.png
-```
 
 ---
 
@@ -145,13 +129,6 @@ Option (b) is lower effort for a v1 install experience.
 **Impact:** Low for prototype, needs fixing before release  
 Content Security Policy is turned off to allow `http://localhost:*` API calls.
 For a signed release build this must be tightened.
-
----
-
-### 5. ~~No app icons included~~ — Resolved
-
-Icons are now committed to `src-tauri/icons/` generated from the official
-`frontend/public/Find-Logo.png`. No manual step required.
 
 ---
 

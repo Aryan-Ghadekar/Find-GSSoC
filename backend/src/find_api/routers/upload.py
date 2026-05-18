@@ -79,6 +79,39 @@ async def upload_bulk_images(
             if not members:
                 raise HTTPException(400, "ZIP archive is empty")
 
+            # Pre-extraction archive safety checks
+
+            # 1. Reject nested archives
+            for info in members:
+                name_lower = info.filename.lower()
+                if any(
+                    name_lower.endswith(ext)
+                    for ext in (".zip", ".tar", ".tgz", ".7z", ".rar")
+                ):
+                    raise HTTPException(
+                        400,
+                        f"ZIP archive contains a nested archive: {info.filename}",
+                    )
+
+            # 2. Reject if total uncompressed size exceeds limit
+            total_size = sum(info.file_size for info in members)
+            max_total = settings.MAX_BULK_TOTAL_SIZE_MB * 1024 * 1024
+            if total_size > max_total:
+                raise HTTPException(
+                    400,
+                    f"Total uncompressed size exceeds the limit of {settings.MAX_BULK_TOTAL_SIZE_MB} MB",
+                )
+
+            # 3. Reject suspicious compression ratios (ZIP bomb)
+            for info in members:
+                if info.compress_size > 0:
+                    ratio = info.file_size / info.compress_size
+                    if ratio > settings.MAX_BULK_COMPRESSION_RATIO:
+                        raise HTTPException(
+                            400,
+                            f"File {info.filename} has a suspicious compression ratio of {ratio:.1f}",
+                        )
+
             if len(members) > settings.MAX_BULK_FILES:
                 raise HTTPException(
                     400,
@@ -87,10 +120,23 @@ async def upload_bulk_images(
 
             results = []
 
+            max_file_size = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
             for info in members:
                 filename = info.filename.split("/")[-1]
 
                 if not filename:
+                    continue
+
+                # Per-file size check
+                if info.file_size > max_file_size:
+                    results.append(
+                        {
+                            "filename": filename,
+                            "status": "failed",
+                            "error": f"File {filename} exceeds max upload size",
+                        }
+                    )
                     continue
 
                 try:

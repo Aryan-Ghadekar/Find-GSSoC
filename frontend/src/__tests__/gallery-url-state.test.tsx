@@ -16,7 +16,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
-import React from "react";
+import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -34,6 +34,7 @@ vi.mock("next/navigation", () => ({
 // Mock next/image
 // ---------------------------------------------------------------------------
 vi.mock("next/image", () => ({
+  // biome-ignore lint/performance/noImgElement: test mock only
   default: ({ alt }: { alt: string }) => <img alt={alt} />,
 }));
 
@@ -152,14 +153,18 @@ function makeWrapper() {
 }
 
 function setParams(params: Record<string, string>) {
-  mockSearchParams.forEach((_v, k) => mockSearchParams.delete(k));
+  for (const k of Array.from(mockSearchParams.keys())) {
+    mockSearchParams.delete(k);
+  }
   for (const [k, v] of Object.entries(params)) {
     mockSearchParams.set(k, v);
   }
 }
 
 function clearParams() {
-  mockSearchParams.forEach((_v, k) => mockSearchParams.delete(k));
+  for (const k of Array.from(mockSearchParams.keys())) {
+    mockSearchParams.delete(k);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -273,12 +278,8 @@ describe("Gallery — URL-state restoration", () => {
     it.todo(
       "restores liked-only mode from ?liked=true and calls getGallery with liked:true",
     );
-    it.todo(
-      "shows 'Liked' button text when ?liked=true is in the URL",
-    );
-    it.todo(
-      "shows only liked items in gallery when ?liked=true is in the URL",
-    );
+    it.todo("shows 'Liked' button text when ?liked=true is in the URL");
+    it.todo("shows only liked items in gallery when ?liked=true is in the URL");
   });
 
   // ── 3. Media deep-link (?media=) — already implemented in page.tsx ────────
@@ -369,5 +370,9 @@ describe("Gallery — URL-state restoration", () => {
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
+
+    it.todo(
+      "media deep-link still works when combined with ?status and ?liked filter params",
+    );
   });
 });

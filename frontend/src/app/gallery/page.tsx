@@ -496,7 +496,9 @@ function GalleryPageContent() {
                           >
                             <RotateCcw
                               className={`h-3.5 w-3.5 ${
-                                reprocessMutation.isPending ? "animate-spin" : ""
+                                reprocessMutation.isPending
+                                  ? "animate-spin"
+                                  : ""
                               }`}
                             />
                           </button>

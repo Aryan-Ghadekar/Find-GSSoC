@@ -16,6 +16,10 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  ImagePreviewModal,
+  type PreviewMedia,
+} from "@/components/image-preview-modal";
+import {
   getPeople,
   getPersonImages,
   type PersonItem,
@@ -61,8 +65,8 @@ function PersonCard({
   });
 
   return (
-    <article className="frost-panel card-hover rounded-3xl p-5">
-      {/* Sample face thumbnails */}
+    <article className="frost-panel card-hover flex flex-col rounded-3xl p-5">
+      {/* Sample face thumbnails — fixed height area */}
       <button
         type="button"
         className="mb-4 grid w-full cursor-pointer grid-cols-2 gap-2 text-left"
@@ -70,12 +74,13 @@ function PersonCard({
         onKeyDown={(e) => {
           if (e.key === "Enter") onClick();
         }}
+        aria-label={`View photos of ${person.name ?? "unknown person"}`}
       >
         {person.sample_media_ids.length > 0 ? (
           person.sample_media_ids.slice(0, 4).map((mediaId) => (
             <div
               key={mediaId}
-              className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--frost)] bg-white/[0.025]"
+              className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--frost)] bg-[color:var(--surface-soft)]"
             >
               <Image
                 src={`${API_BASE_URL}/api/image/${mediaId}/thumbnail`}
@@ -88,82 +93,87 @@ function PersonCard({
             </div>
           ))
         ) : (
-          <div className="col-span-2 flex aspect-square items-center justify-center rounded-2xl border border-[var(--frost)] bg-white/[0.025] text-[#5f6568]">
+          <div className="col-span-2 flex aspect-square items-center justify-center rounded-2xl border border-[var(--frost)] bg-[color:var(--surface-soft)] text-[color:var(--muted)]">
             <ImageOff className="h-8 w-8" />
           </div>
         )}
       </button>
 
-      {/* Person name + edit */}
-      <div className="mb-3 flex items-center gap-2">
-        {isEditing ? (
-          <div className="flex flex-1 items-center gap-2">
-            <input
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submitName();
-                if (e.key === "Escape") setIsEditing(false);
-              }}
-              placeholder="Enter a name..."
-              className="flex-1 rounded-xl border border-[var(--frost)] bg-white/[0.03] px-3 py-1.5 text-sm text-[#f0f0f0] outline-none focus:border-[#3b9eff]"
-            />
-            <button
-              type="button"
-              onClick={submitName}
-              disabled={nameMutation.isPending}
-              className="icon-button"
-              aria-label="Save name"
-            >
-              {nameMutation.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Check className="h-3 w-3" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsEditing(false)}
-              className="icon-button"
-              aria-label="Cancel"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        ) : (
-          <>
-            <p className="flex-1 text-base font-medium text-[#f0f0f0]">
-              {person.name?.trim() ? (
-                person.name
-              ) : (
-                <span className="text-[#5f6568]">Unknown person</span>
-              )}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="icon-button"
-              aria-label="Edit name"
-            >
-              <Pencil className="h-3 w-3" />
-            </button>
-          </>
-        )}
-      </div>
+      {/* Bottom controls — pinned, consistent height */}
+      <div className="mt-auto flex flex-col gap-3">
+        {/* Person name + edit */}
+        <div className="flex min-h-[2rem] items-center gap-2">
+          {isEditing ? (
+            <div className="flex w-full items-center gap-2">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitName();
+                  if (e.key === "Escape") setIsEditing(false);
+                }}
+                placeholder="Enter a name..."
+                className="min-w-0 flex-1 rounded-xl border border-[var(--frost)] bg-[color:var(--surface-soft)] px-3 py-1.5 text-sm text-[color:var(--near-white)] outline-none focus:border-[color:var(--blue)]"
+              />
+              <button
+                type="button"
+                onClick={submitName}
+                disabled={nameMutation.isPending}
+                className="icon-button shrink-0"
+                aria-label="Save name"
+              >
+                {nameMutation.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Check className="h-3 w-3" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="icon-button shrink-0"
+                aria-label="Cancel"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="flex-1 truncate text-base font-medium text-[color:var(--near-white)]">
+                {person.name?.trim() ? (
+                  person.name
+                ) : (
+                  <span className="text-[color:var(--muted)]">
+                    Unknown person
+                  </span>
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="icon-button shrink-0"
+                aria-label="Edit name"
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
+            </>
+          )}
+        </div>
 
-      {/* Face count + view button */}
-      <div className="flex items-center justify-between">
-        <span className="accent-badge status-default">
-          {person.face_count} {person.face_count === 1 ? "photo" : "photos"}
-        </span>
-        <button
-          type="button"
-          onClick={onClick}
-          className="frost-button px-3 py-1.5 text-xs font-medium"
-        >
-          View photos
-        </button>
+        {/* Face count + view button */}
+        <div className="flex items-center justify-between">
+          <span className="accent-badge status-default">
+            {person.face_count} {person.face_count === 1 ? "photo" : "photos"}
+          </span>
+          <button
+            type="button"
+            onClick={onClick}
+            className="frost-button px-3 py-1.5 text-xs font-medium"
+          >
+            View photos
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -174,6 +184,7 @@ function PersonCard({
 export default function PeoplePage() {
   const queryClient = useQueryClient();
   const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
+  const [previewMedia, setPreviewMedia] = useState<PreviewMedia | null>(null);
 
   const {
     data: people,
@@ -216,10 +227,10 @@ export default function PeoplePage() {
               Photos grouped by person, detected and clustered entirely on your
               device.
             </p>
-            {/* Privacy note - required by issue spec */}
-            <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[var(--frost)] bg-white/[0.025] px-4 py-3">
-              <Shield className="h-4 w-4 shrink-0 text-[#3b9eff]" />
-              <p className="text-xs text-[#a1a4a5]">
+            {/* Privacy note */}
+            <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[var(--frost)] bg-[color:var(--surface-soft)] px-4 py-3">
+              <Shield className="h-4 w-4 shrink-0 text-[color:var(--blue)]" />
+              <p className="text-xs text-[color:var(--silver)]">
                 All face data is processed and stored locally on your device. No
                 images or face data are ever sent to any external service.
               </p>
@@ -258,7 +269,7 @@ export default function PeoplePage() {
         {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-32">
-            <Loader2 className="h-8 w-8 animate-spin text-[#a1a4a5]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[color:var(--silver)]" />
           </div>
         )}
 
@@ -272,9 +283,11 @@ export default function PeoplePage() {
         {/* Empty state */}
         {people && people.length === 0 && (
           <div className="frost-panel mx-auto max-w-md rounded-3xl px-8 py-14 text-center">
-            <Users className="mx-auto mb-4 h-10 w-10 text-[#5f6568]" />
-            <p className="mb-2 text-[#f0f0f0]">No people found yet</p>
-            <p className="mb-6 text-sm leading-6 text-[#a1a4a5]">
+            <Users className="mx-auto mb-4 h-10 w-10 text-[color:var(--muted)]" />
+            <p className="mb-2 text-[color:var(--near-white)]">
+              No people found yet
+            </p>
+            <p className="mb-6 text-sm leading-6 text-[color:var(--silver)]">
               Upload photos with faces, then run face clustering.
             </p>
             <button
@@ -294,14 +307,18 @@ export default function PeoplePage() {
           <div className="page-enter">
             <div className="mb-8 grid gap-3 sm:grid-cols-2">
               <div className="frost-panel rounded-2xl p-4">
-                <p className="text-xs uppercase text-[#5f6568]">People found</p>
-                <p className="mt-2 text-3xl font-light text-[#f0f0f0]">
+                <p className="text-xs uppercase text-[color:var(--muted)]">
+                  People found
+                </p>
+                <p className="mt-2 text-3xl font-light text-[color:var(--near-white)]">
                   {people.length}
                 </p>
               </div>
               <div className="frost-panel rounded-2xl p-4">
-                <p className="text-xs uppercase text-[#5f6568]">Total faces</p>
-                <p className="mt-2 text-3xl font-light text-[#f0f0f0]">
+                <p className="text-xs uppercase text-[color:var(--muted)]">
+                  Total faces
+                </p>
+                <p className="mt-2 text-3xl font-light text-[color:var(--near-white)]">
                   {people.reduce((sum, p) => sum + p.face_count, 0)}
                 </p>
               </div>
@@ -331,11 +348,11 @@ export default function PeoplePage() {
           aria-modal="true"
           aria-labelledby="person-modal-title"
         >
-          <div className="frost-panel page-enter relative max-h-[90dvh] w-full max-w-6xl overflow-hidden rounded-3xl bg-black">
+          <div className="frost-panel page-enter relative max-h-[90dvh] w-full max-w-6xl overflow-hidden rounded-3xl bg-[color:var(--void)]">
             <button
               type="button"
               onClick={() => setSelectedPersonId(null)}
-              className="icon-button absolute right-4 top-4 z-20 bg-black/60 backdrop-blur-md"
+              className="icon-button absolute right-4 top-4 z-20 bg-[color:var(--overlay)] backdrop-blur-md"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -344,11 +361,11 @@ export default function PeoplePage() {
             <div className="border-b border-[var(--frost)] px-6 py-5">
               <h2
                 id="person-modal-title"
-                className="text-xl font-medium text-[#f0f0f0]"
+                className="text-xl font-medium text-[color:var(--near-white)]"
               >
                 {selectedPersonQuery.data?.person_name ?? "Unknown person"}
               </h2>
-              <p className="mt-1 text-sm text-[#a1a4a5]">
+              <p className="mt-1 text-sm text-[color:var(--silver)]">
                 All photos containing this person.
               </p>
             </div>
@@ -356,7 +373,7 @@ export default function PeoplePage() {
             <div className="max-h-[calc(90dvh-88px)] overflow-y-auto p-6">
               {selectedPersonQuery.isLoading && (
                 <div className="flex items-center justify-center py-24">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#a1a4a5]" />
+                  <Loader2 className="h-8 w-8 animate-spin text-[color:var(--silver)]" />
                 </div>
               )}
 
@@ -369,11 +386,19 @@ export default function PeoplePage() {
               {selectedPersonQuery.data && (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                   {selectedPersonQuery.data.images.map((img) => (
-                    <div
+                    <button
                       key={img.media_id}
-                      className="frost-panel overflow-hidden rounded-3xl"
+                      type="button"
+                      onClick={() =>
+                        setPreviewMedia({
+                          id: img.media_id,
+                          filename: `Photo ${img.media_id}`,
+                        })
+                      }
+                      className="frost-panel card-hover overflow-hidden rounded-3xl text-left"
+                      aria-label={`Preview photo ${img.media_id}`}
                     >
-                      <div className="relative aspect-square bg-white/[0.025]">
+                      <div className="relative aspect-square bg-[color:var(--surface-soft)]">
                         <Image
                           src={`${API_BASE_URL}/api/image/${img.media_id}/thumbnail`}
                           alt="Photo"
@@ -384,18 +409,31 @@ export default function PeoplePage() {
                         />
                       </div>
                       <div className="p-3">
-                        <p className="text-xs text-[#a1a4a5]">
+                        <p className="text-xs text-[color:var(--silver)]">
                           {img.faces.length}{" "}
                           {img.faces.length === 1 ? "face" : "faces"} detected
                         </p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Reuse existing ImagePreviewModal for full image preview */}
+      {previewMedia && (
+        <ImagePreviewModal
+          media={previewMedia}
+          onClose={() => setPreviewMedia(null)}
+          onDeleted={(mediaId) => {
+            if (previewMedia.id === mediaId) {
+              setPreviewMedia(null);
+            }
+          }}
+        />
       )}
     </div>
   );

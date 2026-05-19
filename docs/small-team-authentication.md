@@ -23,8 +23,9 @@ Create an Instance (admin flows)
   - Optionally configures a friendly instance name.
 - Admin can manually add trusted users (username + password) directly from UI.
 - Admin can generate:
-  - A short-lived invite code (6–8 chars) that users can paste into "Join an Instance"; or
-  - A shareable URL containing a one-time token that points to the admin's public address (if reachable).
+  - A short-lived, single-use high-entropy invite token (minimum 128-bit URL-safe random value) that users can paste into "Join an Instance"; or
+- A shareable URL containing the one-time token and pointing to the admin's reachable instance address.
+- If a human-readable short code is provided for UX purposes, it should only function as an optional alias and still require admin approval alongside strict rate limiting.
 - Admin sees a pending join requests list (approve/reject), and a list of active users and their roles.
 
 Join an Instance (user flows)
@@ -106,7 +107,11 @@ For trusted household and small-team deployments, a lightweight backend-owned au
 ## Security & Privacy considerations
 
 - Default to local-only deployment: instance sharing via invite links only if the admin exposes the instance (e.g., through NAT, reverse proxy, or by running on a reachable host).
-- Use HTTPS for any publicly reachable endpoints; document how to configure TLS (reverse proxy / local certs).
+- Require HTTPS/TLS for all publicly reachable authentication-related endpoints, including login, join, invite, and session APIs.
+- Plaintext HTTP should be explicitly unsupported for authentication and invite flows to prevent credential or token leakage.
+- TLS termination should occur at the deployment edge using a reverse proxy, local certificates, or trusted load balancer configuration.
+- Authentication endpoints should fail closed if TLS is not configured rather than relying solely on HTTP-to-HTTPS redirects.
+- Deployment documentation should include minimal TLS setup guidance for common reverse proxy solutions such as nginx or Caddy.
 - Invite tokens must be single-use or short-lived and stored hashed on disk.
 - Rate-limit join attempts and signups.
 - Store password hashes with a strong algorithm (bcrypt/argon2) and a proper work factor.

@@ -31,7 +31,11 @@ import {
   reprocessImage,
   toggleLike,
 } from "@/lib/api";
-import { resolveMediaUrl } from "@/lib/media";
+import {
+  MINIO_URL_REFRESH_INTERVAL_MS,
+  MINIO_URL_STALE_TIME_MS,
+  resolveMediaUrl,
+} from "@/lib/media";
 
 type GalleryFilter = "all" | "indexed" | "processing" | "failed";
 
@@ -174,6 +178,7 @@ function GalleryPageContent() {
         liked: likedOnly ? true : undefined,
       }),
     placeholderData: (previous) => previous,
+    staleTime: MINIO_URL_STALE_TIME_MS,
     refetchInterval: (query) => {
       const gallery = query.state.data as GalleryResponse | undefined;
 
@@ -181,7 +186,7 @@ function GalleryPageContent() {
         (item) => item.status === "processing" || item.status === "pending",
       )
         ? 5000
-        : false;
+        : MINIO_URL_REFRESH_INTERVAL_MS;
     },
   });
 
@@ -488,7 +493,7 @@ function GalleryPageContent() {
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   filter === value
                     ? "bg-white text-black"
-                    : "text-[#a1a4a5] hover:bg-white/[0.08] hover:text-[#f0f0f0]"
+                    : "text-[color:var(--silver)] hover:bg-[color:var(--frost-soft)] hover:text-[color:var(--near-white)]"
                 }`}
               >
                 {label}
@@ -503,7 +508,7 @@ function GalleryPageContent() {
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition-colors ${
               likedOnly
                 ? "border border-[var(--red-soft)] bg-[var(--red-soft)] text-[#ff9bab]"
-                : "border border-[var(--frost)] text-[#a1a4a5] hover:bg-white/[0.08] hover:text-[#f0f0f0]"
+                : "border border-[var(--frost)] text-[color:var(--silver)] hover:bg-[color:var(--frost-soft)] hover:text-[color:var(--near-white)]"
             }`}
           >
             <Heart className={`h-4 w-4 ${likedOnly ? "fill-current" : ""}`} />
@@ -513,30 +518,32 @@ function GalleryPageContent() {
 
         {isLoading && (
           <div className="flex items-center justify-center py-32">
-            <Loader2 className="h-8 w-8 animate-spin text-[#a1a4a5]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[color:var(--silver)]" />
           </div>
         )}
 
         {error && (
           <div className="py-32 text-center">
-            <p className="text-[#a1a4a5]">Failed to load gallery</p>
+            <p className="text-[color:var(--silver)]">Failed to load gallery</p>
           </div>
         )}
 
         {emptyGalleryCopy && (
           <div className="w-full">
             <div className="frost-panel mx-auto rounded-3xl px-8 py-16 text-center">
-              <ImageOff className="mx-auto mb-4 h-12 w-12 text-[#5f6568]" />
-              <p className="mb-2 text-[#f0f0f0]">{emptyGalleryCopy.title}</p>
+              <ImageOff className="mx-auto mb-4 h-12 w-12 text-[color:var(--muted)]" />
+              <p className="mb-2 text-[color:var(--near-white)]">
+                {emptyGalleryCopy.title}
+              </p>
               {emptyGalleryCopy.subtitle && (
-                <p className="mb-4 text-sm text-[#a1a4a5]">
+                <p className="mb-4 text-sm text-[color:var(--silver)]">
                   {emptyGalleryCopy.subtitle}
                 </p>
               )}
               {emptyGalleryCopy.showUploadLink && (
                 <Link
                   href="/upload"
-                  className="text-sm text-[#3b9eff] hover:underline"
+                  className="text-sm text-[color:var(--blue)] hover:underline"
                 >
                   Upload your first images
                 </Link>
@@ -545,7 +552,7 @@ function GalleryPageContent() {
                 <button
                   type="button"
                   onClick={handleClearLikedOnly}
-                  className="text-sm text-[#3b9eff] hover:underline"
+                  className="text-sm text-[color:var(--blue)] hover:underline"
                 >
                   View all images
                 </button>
@@ -568,7 +575,7 @@ function GalleryPageContent() {
                   >
                     <button
                       type="button"
-                      className="relative block aspect-square w-full overflow-hidden bg-white/[0.025] text-left focus:outline-none"
+                      className="relative block aspect-square w-full overflow-hidden bg-[color:var(--surface-soft)] text-left focus:outline-none"
                       onClick={() => {
                         setQuerySelectedItem(null);
                         setSelectedMediaId(item.id);
@@ -586,7 +593,7 @@ function GalleryPageContent() {
                         />
                       ) : (
                         <div
-                          className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#5f6568]"
+                          className="flex h-full w-full flex-col items-center justify-center gap-2 text-[color:var(--muted)]"
                           role="img"
                           aria-label="No preview available"
                         >
@@ -601,14 +608,14 @@ function GalleryPageContent() {
                         className="absolute bottom-3 right-3"
                       />
                       <div className="absolute inset-0 grid place-items-center opacity-0 transition duration-200 group-hover:opacity-100">
-                        <span className="icon-button h-10 w-10 bg-black/[0.45] backdrop-blur-md">
+                        <span className="icon-button h-10 w-10 bg-[color:var(--overlay)] text-white backdrop-blur-md">
                           <Eye className="h-4 w-4" />
                         </span>
                       </div>
                     </button>
 
                     <div className="space-y-3 p-3">
-                      <p className="truncate text-xs font-medium text-[#f0f0f0]">
+                      <p className="truncate text-xs font-medium text-[color:var(--near-white)]">
                         {item.filename}
                       </p>
                       <div className="flex items-center gap-2">
@@ -617,7 +624,9 @@ function GalleryPageContent() {
                           onClick={() => handleToggleLike(item.id)}
                           disabled={likeMutation.isPending}
                           className={`icon-button h-8 w-8 ${
-                            item.liked ? "text-[#ff9bab]" : "text-[#a1a4a5]"
+                            item.liked
+                              ? "border-[var(--red)] bg-[var(--red-soft)] text-[color:var(--red)]"
+                              : "text-[color:var(--silver)]"
                           } ${
                             likeMutation.isPending
                               ? "cursor-not-allowed opacity-70"
@@ -637,7 +646,7 @@ function GalleryPageContent() {
                           <a
                             href={downloadUrl}
                             download={item.filename}
-                            className="icon-button h-8 w-8 text-[#a1a4a5]"
+                            className="icon-button h-8 w-8 text-[color:var(--silver)]"
                             aria-label="Download image"
                           >
                             <Download className="h-3.5 w-3.5" />
@@ -649,7 +658,7 @@ function GalleryPageContent() {
                             type="button"
                             onClick={() => reprocessMutation.mutate(item.id)}
                             disabled={reprocessMutation.isPending}
-                            className={`icon-button h-8 w-8 text-[#a1a4a5] ${
+                            className={`icon-button h-8 w-8 text-[color:var(--silver)] ${
                               reprocessMutation.isPending
                                 ? "cursor-not-allowed opacity-70"
                                 : ""
@@ -667,7 +676,7 @@ function GalleryPageContent() {
                             handleDeleteRequest(item.id, item.filename)
                           }
                           disabled={deleteMutation.isPending}
-                          className={`icon-button h-8 w-8 text-[#a1a4a5] ${
+                          className={`icon-button h-8 w-8 text-[color:var(--silver)] ${
                             deleteMutation.isPending
                               ? "cursor-not-allowed opacity-70"
                               : ""
@@ -695,7 +704,7 @@ function GalleryPageContent() {
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <span className="text-sm text-[#a1a4a5]">
+                <span className="text-sm text-[color:var(--silver)]">
                   Page {page} of {Math.ceil(data.total / limit)}
                 </span>
                 <button
@@ -736,10 +745,10 @@ function GalleryPageContent() {
       {deleteTarget && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 px-4 backdrop-blur-lg">
           <div className="frost-panel page-enter w-full max-w-sm rounded-3xl p-6">
-            <h2 className="text-lg font-semibold text-[#f0f0f0]">
+            <h2 className="text-lg font-semibold text-[color:var(--near-white)]">
               Delete image?
             </h2>
-            <p className="mt-2 text-sm text-[#a1a4a5]">
+            <p className="mt-2 text-sm text-[color:var(--silver)]">
               {deleteTarget.filename
                 ? `"${deleteTarget.filename}"`
                 : "This image"}{" "}

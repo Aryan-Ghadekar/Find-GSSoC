@@ -28,7 +28,16 @@ function buildEncodedUrl(objectKey?: string | null) {
 export function resolveMediaUrl(
   url?: string | null,
   objectKey?: string | null,
+  id?: number | null,
+  isThumbnail: boolean = false,
 ) {
+  if (isThumbnail && id != null) {
+    const apiBaseUrl = (
+      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+    ).replace(/\/+$/, "");
+    return `${apiBaseUrl}/api/image/${id}/thumbnail`;
+  }
+
   const fallback = buildEncodedUrl(objectKey);
 
   if (url?.includes("X-Amz-Signature=")) {

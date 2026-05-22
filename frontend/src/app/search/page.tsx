@@ -202,6 +202,8 @@ export default function SearchPage() {
                 const imageSrc = resolveMediaUrl(
                   result.metadata.url,
                   result.metadata.minio_key,
+                  result.media_id,
+                  true,
                 );
 
                 return (

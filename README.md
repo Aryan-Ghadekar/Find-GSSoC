@@ -114,7 +114,7 @@ Find ships two runtime modes that serve different purposes. Choosing the wrong o
 
 ### Mock mode (light stack)
 
-```
+```bash
 docker compose -f docker-compose.light.yml up --build
 ```
 
@@ -140,7 +140,7 @@ Because mock vectors have no semantic content, search results are meaningless â€
 
 ### Full ML mode (full stack)
 
-```
+```bash
 docker compose up --build
 ```
 

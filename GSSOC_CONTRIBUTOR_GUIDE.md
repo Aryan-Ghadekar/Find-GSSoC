@@ -111,7 +111,7 @@ gallery rendering all work correctly.
 - Reporting or fixing clustering quality (which images group together)
 - Testing any change to ML model parameters or the inference pipeline
 
-```
+```bash
 # Full ML stack — requires NVIDIA GPU; downloads models on first run
 docker compose up --build
 ```

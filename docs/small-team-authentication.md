@@ -62,10 +62,12 @@ The authentication architecture for Find should prioritize local-first deploymen
 ### Better Auth
 
 Better Auth provides a modern self-hosted authentication approach with session handling and extensibility. It aligns reasonably well with self-hosted deployments, but may still introduce unnecessary abstraction and operational overhead for small trusted deployments.
+Because Find's authoritative API is FastAPI/Python, using Better Auth would also require a clear boundary between the Next.js UI session layer and backend authorization checks.
 
 ### Auth.js
 
 Auth.js provides a mature authentication ecosystem and strong OAuth support, but it is more heavily oriented toward web-platform and SaaS-oriented authentication flows. Many of its strengths are less relevant for Find’s local-first deployment model.
+It would be most useful if Find later adds optional OAuth providers, but it is not the smallest fit for an offline-capable household instance.
 
 ### Backend-Owned Authentication
 
@@ -107,10 +109,10 @@ For trusted household and small-team deployments, a lightweight backend-owned au
 ## Security & Privacy considerations
 
 - Default to local-only deployment: instance sharing via invite links only if the admin exposes the instance (e.g., through NAT, reverse proxy, or by running on a reachable host).
-- Require HTTPS/TLS for all publicly reachable authentication-related endpoints, including login, join, invite, and session APIs.
-- Plaintext HTTP should be explicitly unsupported for authentication and invite flows to prevent credential or token leakage.
+- Require HTTPS/TLS for all non-localhost authentication-related endpoints, including login, join, invite, and session APIs.
+- Plaintext HTTP is acceptable only for local development and trusted loopback access. It should be rejected or clearly blocked for LAN/internet-exposed authentication flows to prevent credential or token leakage.
 - TLS termination should occur at the deployment edge using a reverse proxy, local certificates, or trusted load balancer configuration.
-- Authentication endpoints should fail closed if TLS is not configured rather than relying solely on HTTP-to-HTTPS redirects.
+- Exposed authentication endpoints should fail closed if TLS is not configured rather than relying solely on HTTP-to-HTTPS redirects.
 - Deployment documentation should include minimal TLS setup guidance for common reverse proxy solutions such as nginx or Caddy.
 - Invite tokens must be single-use or short-lived and stored hashed on disk.
 - Rate-limit join attempts and signups.

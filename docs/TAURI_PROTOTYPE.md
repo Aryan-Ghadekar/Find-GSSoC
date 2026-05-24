@@ -2,7 +2,7 @@
 
 Proof-of-direction for wrapping the Find Next.js frontend in a Tauri desktop shell.
 Implements **Phase 1** of the installable local-first architecture described in
-[`docs/installable-local-first-architecture-roadmap.md`](docs/installable-local-first-architecture-roadmap.md).
+[`installable-local-first-architecture-roadmap.md`](installable-local-first-architecture-roadmap.md).
 Relates to issue #42 and discussion #37.
 
 ---

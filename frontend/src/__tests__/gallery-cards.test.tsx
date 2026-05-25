@@ -131,7 +131,7 @@ describe("Gallery card states (light mode)", () => {
     // Normal card (id 1) should show image and no filled heart
     const card1Img = screen.getByAltText("image1.jpg");
     expect(card1Img).toBeInTheDocument();
-    expect(card1Img.closest("article")).toContainElement(indexedLabels[0]);
+    expect(card1Img.closest("article")).toContainElement(indexedLabels[0]!);
     const heartBtn1 = screen.getAllByLabelText("Like image")[0];
     expect(heartBtn1).toBeInTheDocument();
 
@@ -140,7 +140,7 @@ describe("Gallery card states (light mode)", () => {
     expect(unlikeBtns).toHaveLength(1);
     const heartBtn3 = unlikeBtns[0];
     expect(heartBtn3).toBeInTheDocument();
-    expect(heartBtn3.closest("article")).toContainElement(indexedLabels[1]);
+    expect(heartBtn3!.closest("article")).toContainElement(indexedLabels[1]!);
     // Failed card (id 2) should show retry button
     const card2Img = screen.getByAltText("image2.jpg");
     expect(card2Img.closest("article")).toContainElement(

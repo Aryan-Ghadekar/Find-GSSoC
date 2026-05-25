@@ -104,7 +104,12 @@ def search_images(
 
     result = db.execute(
         query_sql,
-        {"embedding": embedding_str, "limit": limit, "skip": skip, "threshold": threshold},
+        {
+            "embedding": embedding_str,
+            "limit": limit,
+            "skip": skip,
+            "threshold": threshold,
+        },
     )
 
     # Build response

@@ -154,9 +154,10 @@ export default function ClustersPage() {
   const minClusterSize = data?.min_cluster_size ?? 2;
   const effectiveMinClusterSize = Math.max(minClusterSize, 1);
   const indexedImageCount = indexedQuery.data?.total ?? 0;
-  const hasEnoughIndexedImages = indexedQuery.isSuccess &&
-  indexedImageCount > 0 &&
-  indexedImageCount >= effectiveMinClusterSize;
+  const hasEnoughIndexedImages =
+    indexedQuery.isSuccess &&
+    indexedImageCount > 0 &&
+    indexedImageCount >= effectiveMinClusterSize;
   const isClusterButtonDisabled =
     isClusterActionBusy || !hasEnoughIndexedImages;
   const clusteringUnavailableMessage =
